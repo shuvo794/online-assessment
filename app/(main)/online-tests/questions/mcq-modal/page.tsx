@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter, useSearchParams } from "next/navigation";
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import Link from "next/link";
 
 interface Option {
@@ -18,7 +18,7 @@ export default function MCQEditorPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const id = searchParams.get("id") || "";
-
+  const qid = searchParams.get("qid") || "";
   const [points, setPoints] = useState(1);
   const [questionText, setQuestionText] = useState("");
   const [options, setOptions] = useState<Option[]>([
@@ -26,6 +26,28 @@ export default function MCQEditorPage() {
     { id: "2", letter: "B", text: "", isCorrect: false },
     { id: "3", letter: "C", text: "", isCorrect: false },
   ]);
+
+  useEffect(() => {
+    if (qid) {
+      const userQuestions = JSON.parse(localStorage.getItem("user_added_questions") || "[]");
+      const questionToEdit = userQuestions.find((q: any) => q.id === qid);
+      if (questionToEdit) {
+        setQuestionText(questionToEdit.text);
+        setPoints(questionToEdit.points);
+        
+        const mappedOptions = questionToEdit.options.map((opt: any, i: number) => {
+          const parts = opt.text.split(". ");
+          return {
+            id: i.toString(),
+            letter: parts[0] || String.fromCharCode(65 + i),
+            text: parts.slice(1).join(". ") || "",
+            isCorrect: opt.correct
+          };
+        });
+        setOptions(mappedOptions);
+      }
+    }
+  }, [qid]);
 
   const handleAddOption = () => {
     const nextLetter = String.fromCharCode(65 + options.length);
@@ -62,8 +84,8 @@ export default function MCQEditorPage() {
       return;
     }
 
-    const newQuestion = {
-      id: Date.now().toString(),
+    const newQuestionData = {
+      id: qid || Date.now().toString(),
       type: "MCQ",
       points: points,
       text: questionText,
@@ -75,8 +97,18 @@ export default function MCQEditorPage() {
       })),
     };
 
-    const existingQuestions = JSON.parse(localStorage.getItem("user_added_questions") || "[]");
-    localStorage.setItem("user_added_questions", JSON.stringify([...existingQuestions, newQuestion]));
+    const userQuestions = JSON.parse(localStorage.getItem("user_added_questions") || "[]");
+    
+    let updatedQuestions;
+    if (qid) {
+      // Update existing
+      updatedQuestions = userQuestions.map((q: any) => q.id === qid ? newQuestionData : q);
+    } else {
+      // Add new
+      updatedQuestions = [...userQuestions, newQuestionData];
+    }
+    
+    localStorage.setItem("user_added_questions", JSON.stringify(updatedQuestions));
 
     router.push(`/online-tests/save?id=${id}`);
   };

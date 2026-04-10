@@ -61,6 +61,13 @@ export default function OnlineTestSavePage() {
     setQuestions([...STATIC_QUESTIONS, ...userQuestions]);
   }, []);
 
+  const handleRemove = (qid: string) => {
+    const userQuestions = JSON.parse(localStorage.getItem("user_added_questions") || "[]");
+    const updatedUserQuestions = userQuestions.filter((q: any) => q.id !== qid);
+    localStorage.setItem("user_added_questions", JSON.stringify(updatedUserQuestions));
+    setQuestions([...STATIC_QUESTIONS, ...updatedUserQuestions]);
+  };
+
   return (
     <div className="mx-auto w-full max-w-[960px] pb-12">
       <div className="rounded-2xl border border-gray-200 bg-white p-6 shadow-[0_4px_24px_rgba(15,23,42,0.06)] sm:p-8 md:p-10">
@@ -101,6 +108,8 @@ export default function OnlineTestSavePage() {
                 selected: opt.selected || opt.correct || false 
               }))}
               content={q.content}
+              onEdit={() => router.push(`/online-tests/questions/mcq-modal?id=${id}&qid=${q.id}`)}
+              onRemove={() => handleRemove(q.id)}
             />
           ))}
         </div>
@@ -130,6 +139,7 @@ export default function OnlineTestSavePage() {
     </div>
   );
 }
+
 function QuestionCard({
   number,
   type,
@@ -137,6 +147,8 @@ function QuestionCard({
   question,
   options,
   content,
+  onEdit,
+  onRemove
 }: {
   number: number;
   type: string;
@@ -144,6 +156,8 @@ function QuestionCard({
   question: string;
   options?: { label: string; selected?: boolean }[];
   content?: string;
+  onEdit?: () => void;
+  onRemove?: () => void;
 }) {
   return (
     <div className="flex flex-col gap-4">
@@ -194,12 +208,14 @@ function QuestionCard({
       <div className="mt-2 flex items-center justify-between border-t border-gray-100 pt-4">
         <button
           type="button"
+          onClick={onEdit}
           className="text-sm font-bold text-[#6633ff] hover:opacity-80"
         >
           Edit
         </button>
         <button
           type="button"
+          onClick={onRemove}
           className="text-sm font-bold text-[#f43f5e] hover:opacity-80"
         >
           Remove From Exam
