@@ -1,9 +1,66 @@
+"use client";
+
+import { useEffect, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
+
+interface Question {
+  id: string;
+  type: string;
+  points: number;
+  text: string;
+  options?: { text: string; correct?: boolean; label?: string; selected?: boolean }[];
+  content?: string;
+}
+
+const STATIC_QUESTIONS: Question[] = [
+  {
+    id: "1",
+    type: "MCQ",
+    points: 1,
+    text: "What is the Capital of Bangladesh?",
+    options: [
+      { text: "A. Dhaka", correct: true, label: "A. Dhaka", selected: true },
+      { text: "B. Chattogram", label: "B. Chattogram" },
+      { text: "C. Rajshahi", label: "C. Rajshahi" },
+      { text: "D. Barishal", label: "D. Barishal" },
+    ],
+  },
+  {
+    id: "2",
+    type: "Checkbox",
+    points: 1,
+    text: "What is the Capital of Bangladesh?",
+    options: [
+      { text: "A. Dhaka", correct: true, label: "A. Dhaka", selected: true },
+      { text: "B. Chattogram", label: "B. Chattogram" },
+      { text: "C. Rajshahi", correct: true, label: "C. Rajshahi", selected: true },
+      { text: "D. Barishal", label: "D. Barishal" },
+    ],
+  },
+  {
+    id: "3",
+    type: "Text",
+    points: 5,
+    text: "Write a brief of your capital city",
+    content: "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Etiam eu turpis molestie, dictum est a, mattis tellus. Sed dignissim, metus nec fringilla accumsan, risus sem sollicitudin lacus, ut interdum tellus elit sed risus. Maecenas eget condimentum velit, sit amet feugiat lectus. Class aptent taciti sociosqu ad litora torquent per conubia nostra, per inceptos himenaeos. Praesent auctor purus luctus enim egestas, ac scelerisque ante pulvinar. Donec ut rhoncus ex. Suspendisse ac rhoncus nisl, eu tempor urna. Curabitur vel bibendum lorem. Morbi convallis convallis diam sit amet lacinia. Aliquam in elementum tellus.",
+  },
+];
 
 /**
  * Manage Online Test — Save / List View
  */
 export default function OnlineTestSavePage() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const id = searchParams.get("id") || "";
+  const [questions, setQuestions] = useState<Question[]>(STATIC_QUESTIONS);
+
+  useEffect(() => {
+    const userQuestions = JSON.parse(localStorage.getItem("user_added_questions") || "[]");
+    setQuestions([...STATIC_QUESTIONS, ...userQuestions]);
+  }, []);
+
   return (
     <div className="mx-auto w-full max-w-[960px] pb-12">
       <div className="rounded-2xl border border-gray-200 bg-white p-6 shadow-[0_4px_24px_rgba(15,23,42,0.06)] sm:p-8 md:p-10">
@@ -32,58 +89,47 @@ export default function OnlineTestSavePage() {
 
         {/* Question List */}
         <div className="flex flex-col gap-10">
-          {/* Question 1 - MCQ */}
-          <QuestionCard
-            number={1}
-            type="MCQ"
-            points={1}
-            question="What is the Capital of Bangladesh?"
-            options={[
-              { label: "A. Dhaka", selected: true },
-              { label: "B. Chattogram" },
-              { label: "C. Rajshahi" },
-              { label: "D. Barishal" },
-            ]}
-          />
-
-          {/* Question 2 - Checkbox */}
-          <QuestionCard
-            number={2}
-            type="Checkbox"
-            points={1}
-            question="What is the Capital of Bangladesh?"
-            options={[
-              { label: "A. Dhaka", selected: true },
-              { label: "B. Chattogram" },
-              { label: "C. Rajshahi", selected: true },
-              { label: "D. Barishal" },
-            ]}
-          />
-
-          {/* Question 3 - Text */}
-          <QuestionCard
-            number={3}
-            type="Text"
-            points={5}
-            question="Write a brief of your capital city"
-            content="Lorem ipsum dolor sit amet, consectetur adipiscing elit. Etiam eu turpis molestie, dictum est a, mattis tellus. Sed dignissim, metus nec fringilla accumsan, risus sem sollicitudin lacus, ut interdum tellus elit sed risus. Maecenas eget condimentum velit, sit amet feugiat lectus. Class aptent taciti sociosqu ad litora torquent per conubia nostra, per inceptos himenaeos. Praesent auctor purus luctus enim egestas, ac scelerisque ante pulvinar. Donec ut rhoncus ex. Suspendisse ac rhoncus nisl, eu tempor urna. Curabitur vel bibendum lorem. Morbi convallis convallis diam sit amet lacinia. Aliquam in elementum tellus."
-          />
+          {questions.map((q, index) => (
+            <QuestionCard
+              key={q.id || index}
+              number={index + 1}
+              type={q.type}
+              points={q.points}
+              question={q.text}
+              options={q.options?.map(opt => ({ 
+                label: opt.label || opt.text || "", 
+                selected: opt.selected || opt.correct || false 
+              }))}
+              content={q.content}
+            />
+          ))}
         </div>
 
-        {/* Add Question Button */}
-        <div className="mt-12">
+        {/* Actions Footer */}
+        <div className="mt-12 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between border-t border-gray-100 pt-8">
           <button
             type="button"
-            className="flex w-full items-center justify-center rounded-2xl bg-[#6633ff] py-4 text-base font-bold text-white shadow-[0_8px_30px_rgb(102,51,255,0.2)] transition-all hover:bg-[#5528e0] active:scale-[0.99]"
+            onClick={() => router.push(`/online-tests/questions/mcq-modal?id=${id}`)}
+            className="inline-flex h-14 items-center justify-center rounded-2xl border border-[#6633ff] px-10 text-base font-bold text-[#6633ff] transition-all hover:bg-violet-50"
           >
             Add Question
+          </button>
+          <button
+            type="button"
+            onClick={() => {
+              // Clear user questions on final finish if desired
+              // localStorage.removeItem("user_added_questions");
+              router.push("/dashboard");
+            }}
+            className="inline-flex h-14 items-center justify-center rounded-2xl bg-[#6633ff] px-12 text-base font-bold text-white shadow-[0_8px_30px_rgb(102,51,255,0.2)] transition-all hover:bg-[#5528e0] active:scale-[0.99]"
+          >
+            Save & Finish
           </button>
         </div>
       </div>
     </div>
   );
 }
-
 function QuestionCard({
   number,
   type,

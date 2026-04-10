@@ -1,9 +1,45 @@
+"use client";
+
+import { useEffect, useState, Suspense } from "react";
+import { useSearchParams, useRouter } from "next/navigation";
 import Link from "next/link";
 
-/**
- * Manage Online Test — View / Read-only state
- */
-export default function ViewOnlineTestPage() {
+interface TestData {
+  id: string;
+  title: string;
+  candidates: string;
+  slots: string;
+  questionSet: string;
+  questionType: string;
+  startTime: string;
+  endTime: string;
+  duration: string;
+}
+
+function ViewOnlineTestContent() {
+  const searchParams = useSearchParams();
+  const router = useRouter();
+  const [testData, setTestData] = useState<TestData | null>(null);
+
+  useEffect(() => {
+    const id = searchParams.get("id");
+    if (id) {
+      const existingTests = JSON.parse(localStorage.getItem("online_tests") || "[]");
+      const test = existingTests.find((t: TestData) => t.id === id);
+      if (test) {
+        setTestData(test);
+      }
+    }
+  }, [searchParams]);
+
+  if (!testData) {
+    return (
+      <div className="flex justify-center items-center p-20">
+        <p className="text-slate-500 font-medium">Loading test data...</p>
+      </div>
+    );
+  }
+
   return (
     <div className="mx-auto w-full max-w-[960px]">
       <div className="rounded-2xl border border-gray-200 bg-white p-6 shadow-[0_4px_24px_rgba(15,23,42,0.06)] sm:p-8 md:p-10">
@@ -48,7 +84,7 @@ export default function ViewOnlineTestPage() {
                 Online Test Title
               </span>
               <p className="text-base font-bold text-slate-900">
-                Psychometric Test for Management Trainee Officer
+                {testData.title}
               </p>
             </div>
 
@@ -57,28 +93,28 @@ export default function ViewOnlineTestPage() {
                 <span className="text-[13px] font-medium text-slate-400">
                   Total Candidates
                 </span>
-                <p className="text-base font-bold text-slate-900">10,000</p>
+                <p className="text-base font-bold text-slate-900">{testData.candidates}</p>
               </div>
 
               <div className="flex flex-col gap-1.5">
                 <span className="text-[13px] font-medium text-slate-400">
                   Total Slots
                 </span>
-                <p className="text-base font-bold text-slate-900">3</p>
+                <p className="text-base font-bold text-slate-900">{testData.slots}</p>
               </div>
 
               <div className="flex flex-col gap-1.5">
                 <span className="text-[13px] font-medium text-slate-400">
                   Total Question Set
                 </span>
-                <p className="text-base font-bold text-slate-900">2</p>
+                <p className="text-base font-bold text-slate-900">{testData.questionSet}</p>
               </div>
 
               <div className="flex flex-col gap-1.5">
                 <span className="text-[13px] font-medium text-slate-400">
                   Duration Per Slots (Minutes)
                 </span>
-                <p className="text-base font-bold text-slate-900">30</p>
+                <p className="text-base font-bold text-slate-900">{testData.duration || "0"}</p>
               </div>
             </div>
 
@@ -86,7 +122,7 @@ export default function ViewOnlineTestPage() {
               <span className="text-[13px] font-medium text-slate-400">
                 Question Type
               </span>
-              <p className="text-base font-bold text-slate-900">MCQ</p>
+              <p className="text-base font-bold text-slate-900">{testData.questionType.toUpperCase()}</p>
             </div>
           </div>
         </div>
@@ -101,6 +137,7 @@ export default function ViewOnlineTestPage() {
           </Link>
           <button
             type="button"
+            onClick={() => router.push(`/online-tests/questions?id=${testData.id}`)}
             className="inline-flex h-12 items-center justify-center rounded-xl bg-[#6633ff] px-12 text-sm font-bold text-white transition-colors hover:bg-[#5528e0]"
           >
             Save & Continue
@@ -108,6 +145,17 @@ export default function ViewOnlineTestPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+/**
+ * Manage Online Test — View / Read-only state
+ */
+export default function ViewOnlineTestPage() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <ViewOnlineTestContent />
+    </Suspense>
   );
 }
 

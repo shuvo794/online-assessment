@@ -1,13 +1,54 @@
 "use client";
 
-import type { ReactNode } from "react";
+import { useState, type ReactNode } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 
 /**
  * Manage Online Test — Step 1 Basic Information
  * Figma node `1:6073` — https://www.figma.com/design/mhBxaav3SsrmdHKvDcM6N8/Interview-Task--Copy-?node-id=1-6073
  */
 export function ManageOnlineTestBasicForm() {
+  const router = useRouter();
+  const [formData, setFormData] = useState({
+    title: "",
+    candidates: "",
+    slots: "",
+    questionSet: "",
+    questionType: "",
+    startTime: "",
+    endTime: "",
+    duration: "",
+  });
+
+  const handleChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
+  ) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    // Simple validation
+    if (!formData.title || !formData.candidates || !formData.slots || !formData.questionSet || !formData.questionType) {
+      alert("Please fill in all required fields.");
+      return;
+    }
+
+    const newTest = {
+      ...formData,
+      id: Date.now().toString(),
+      createdAt: new Date().toISOString(),
+    };
+
+    const existingTests = JSON.parse(localStorage.getItem("online_tests") || "[]");
+    localStorage.setItem("online_tests", JSON.stringify([...existingTests, newTest]));
+
+    router.push(`/online-tests/view?id=${newTest.id}`);
+  };
+
   return (
     <div className="mx-auto w-full max-w-[960px]">
       <div className="rounded-2xl border border-gray-200 bg-white p-6 shadow-[0_4px_24px_rgba(15,23,42,0.06)] sm:p-8 md:p-10">
@@ -35,16 +76,16 @@ export function ManageOnlineTestBasicForm() {
 
         <h2 className="mb-6 text-lg font-semibold text-slate-800">Basic Information</h2>
 
-        <form
-          className="flex flex-col gap-6"
-          onSubmit={(e) => e.preventDefault()}
-        >
+        <form className="flex flex-col gap-6" onSubmit={handleSubmit}>
           <Field label="Online Test Title" required>
             <input
               type="text"
               name="title"
+              value={formData.title}
+              onChange={handleChange}
               placeholder="Enter online test title"
               className="w-full rounded-lg border border-gray-300 bg-white px-3 py-2.5 text-sm text-slate-800 placeholder:text-slate-400 focus:border-[#6633ff] focus:outline-none focus:ring-2 focus:ring-violet-100"
+              required
             />
           </Field>
 
@@ -53,13 +94,27 @@ export function ManageOnlineTestBasicForm() {
               <input
                 type="text"
                 name="candidates"
+                value={formData.candidates}
+                onChange={handleChange}
                 inputMode="numeric"
                 placeholder="Enter total candidates"
                 className="w-full rounded-lg border border-gray-300 bg-white px-3 py-2.5 text-sm text-slate-800 placeholder:text-slate-400 focus:border-[#6633ff] focus:outline-none focus:ring-2 focus:ring-violet-100"
+                required
               />
             </Field>
             <Field label="Total Slots" required>
-              <SelectField name="slots" placeholder="Select total slots" options={[]} />
+              <SelectField
+                name="slots"
+                value={formData.slots}
+                onChange={handleChange}
+                placeholder="Select total slots"
+                options={[
+                  { value: "1", label: "1" },
+                  { value: "2", label: "2" },
+                  { value: "3", label: "3" },
+                ]}
+                required
+              />
             </Field>
           </div>
 
@@ -67,30 +122,55 @@ export function ManageOnlineTestBasicForm() {
             <Field label="Total Question Set" required>
               <SelectField
                 name="questionSet"
+                value={formData.questionSet}
+                onChange={handleChange}
                 placeholder="Select total question set"
-                options={[]}
+                options={[
+                  { value: "1", label: "1" },
+                  { value: "2", label: "2" },
+                  { value: "3", label: "3" },
+                ]}
+                required
               />
             </Field>
             <Field label="Question Type" required>
               <SelectField
                 name="questionType"
+                value={formData.questionType}
+                onChange={handleChange}
                 placeholder="Select question type"
-                options={[]}
+                options={[
+                  { value: "mcq", label: "MCQ" },
+                  { value: "subjective", label: "Subjective" },
+                ]}
+                required
               />
             </Field>
           </div>
 
           <div className="grid gap-6 sm:grid-cols-3">
             <Field label="Start Time" required>
-              <TimeInput name="startTime" placeholder="Enter start time" />
+              <TimeInput
+                name="startTime"
+                value={formData.startTime}
+                onChange={handleChange}
+                placeholder="Enter start time"
+              />
             </Field>
             <Field label="End Time" required>
-              <TimeInput name="endTime" placeholder="Enter end time" />
+              <TimeInput
+                name="endTime"
+                value={formData.endTime}
+                onChange={handleChange}
+                placeholder="Enter end time"
+              />
             </Field>
             <Field label="Duration">
               <input
                 type="text"
                 name="duration"
+                value={formData.duration}
+                onChange={handleChange}
                 placeholder="Duration Time"
                 className="w-full rounded-lg border border-gray-300 bg-white px-3 py-2.5 text-sm text-slate-800 placeholder:text-slate-400 focus:border-[#6633ff] focus:outline-none focus:ring-2 focus:ring-violet-100"
               />
@@ -101,6 +181,7 @@ export function ManageOnlineTestBasicForm() {
             <button
               type="button"
               className="rounded-xl border border-gray-300 bg-white px-6 py-3 text-sm font-semibold text-slate-700 transition-colors hover:bg-slate-50"
+              onClick={() => router.back()}
             >
               Cancel
             </button>
@@ -174,15 +255,23 @@ function SelectField({
   name,
   placeholder,
   options,
+  value,
+  onChange,
+  required,
 }: {
   name: string;
   placeholder: string;
   options: { value: string; label: string }[];
+  value: string;
+  onChange: (e: React.ChangeEvent<HTMLSelectElement>) => void;
+  required?: boolean;
 }) {
   return (
     <select
       name={name}
-      defaultValue=""
+      value={value}
+      onChange={onChange}
+      required={required}
       className="w-full appearance-none rounded-lg border border-gray-300 bg-white px-3 py-2.5 text-sm text-slate-800 focus:border-[#6633ff] focus:outline-none focus:ring-2 focus:ring-violet-100"
     >
       <option value="" disabled>
@@ -200,16 +289,25 @@ function SelectField({
 function TimeInput({
   name,
   placeholder,
+  value,
+  onChange,
+  required,
 }: {
   name: string;
   placeholder: string;
+  value: string;
+  onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  required?: boolean;
 }) {
   return (
     <div className="relative">
       <input
         type="text"
         name={name}
+        value={value}
+        onChange={onChange}
         placeholder={placeholder}
+        required={required}
         className="w-full rounded-lg border border-gray-300 bg-white py-2.5 pl-3 pr-10 text-sm text-slate-800 placeholder:text-slate-400 focus:border-[#6633ff] focus:outline-none focus:ring-2 focus:ring-violet-100"
       />
       <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-slate-400">

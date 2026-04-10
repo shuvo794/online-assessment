@@ -1,4 +1,6 @@
-import type { ReactNode } from "react";
+"use client";
+
+import { useEffect, useState, type ReactNode } from "react";
 
 import {
   ChevronDownSmallIcon,
@@ -10,41 +12,44 @@ import {
 } from "@/components/online-tests-icons";
 import { OnlineTestsToolbar } from "@/components/online-tests-toolbar";
 
-const MOCK_TESTS = [
+interface TestData {
+  title: string;
+  candidates: string;
+  questionSet: string;
+  slots?: string;
+  examSlots?: string;
+}
+
+const MOCK_TESTS: TestData[] = [
   {
     title: "Psychometric Test for Management Trainee Officer",
     candidates: "10,000",
     questionSet: "3",
     examSlots: "3",
   },
-  {
-    title: "Psychometric Test for Management Trainee Officer",
-    candidates: "10,000",
-    questionSet: "3",
-    examSlots: "3",
-  },
-  {
-    title: "Psychometric Test for Management Trainee Officer",
-    candidates: "Not Set",
-    questionSet: "Not Set",
-    examSlots: "Not Set",
-  },
-  {
-    title: "Psychometric Test for Management Trainee Officer",
-    candidates: "10,000",
-    questionSet: "3",
-    examSlots: "3",
-  },
-] as const;
+];
 
 /** Dashboard with test cards — route `/dashboard` */
 export function DashboardOnlineTests() {
+  const [tests, setTests] = useState<TestData[]>([]);
+
+  useEffect(() => {
+    const savedTests = JSON.parse(localStorage.getItem("online_tests") || "[]");
+    // Normalize data from localStorage to match the display structure
+    const normalizedSaved = savedTests.map((t: any) => ({
+      ...t,
+      examSlots: t.slots, // Map 'slots' from form to 'examSlots' for display
+    }));
+    
+    setTests([...MOCK_TESTS, ...normalizedSaved]);
+  }, []);
+
   return (
     <div className="mx-auto flex w-full max-w-[1280px] flex-col gap-4">
       <OnlineTestsToolbar />
 
       <div className="grid gap-4 sm:grid-cols-2">
-        {MOCK_TESTS.map((test, i) => (
+        {tests.map((test, i) => (
           <article
             key={i}
             className="flex flex-col gap-6 rounded-2xl border border-gray-200 bg-white px-8 pb-10 pt-8 shadow-sm"
@@ -66,7 +71,7 @@ export function DashboardOnlineTests() {
               <Stat
                 icon={<TimelineIcon className="size-6 text-slate-600" />}
                 label="Exam Slots:"
-                value={test.examSlots}
+                value={test.examSlots || test.slots || "Not Set"}
               />
             </div>
             <div>

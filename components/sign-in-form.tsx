@@ -1,9 +1,25 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 
 export function SignInForm() {
   const [showPassword, setShowPassword] = useState(false);
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const router = useRouter();
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (email === "admin@gmail.com" && password === "1234") {
+      localStorage.setItem("user", JSON.stringify({ email, role: "admin", isLoggedIn: true }));
+      router.push("/dashboard");
+    } else if (email && password) {
+      localStorage.setItem("user", JSON.stringify({ email, role: "user", isLoggedIn: true }));
+      router.push("/testOnlineDashboard");
+    }
+  };
 
   return (
     <div className="flex w-full max-w-[571px] flex-col gap-6">
@@ -13,7 +29,7 @@ export function SignInForm() {
 
       <form
         className="rounded-2xl border border-gray-200 bg-white px-8 pb-10 pt-8 shadow-sm"
-        onSubmit={(e) => e.preventDefault()}
+        onSubmit={handleSubmit}
       >
         <div className="flex flex-col gap-10">
           <div className="flex flex-col gap-6">
@@ -28,9 +44,12 @@ export function SignInForm() {
                 id="email"
                 name="email"
                 type="text"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
                 autoComplete="username"
                 placeholder="Enter your email/User ID"
                 className="w-full rounded-lg border border-gray-300 bg-white px-3 py-3 text-sm leading-[1.5] text-slate-800 placeholder:text-slate-400 focus:border-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-200"
+                required
               />
             </div>
 
@@ -46,9 +65,12 @@ export function SignInForm() {
                   id="password"
                   name="password"
                   type={showPassword ? "text" : "password"}
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
                   autoComplete="current-password"
                   placeholder="Enter your password"
                   className="w-full rounded-lg border border-gray-300 bg-white py-3 pl-3 pr-12 text-sm leading-[1.5] text-slate-800 placeholder:text-slate-400 focus:border-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-200"
+                  required
                 />
                 <button
                   type="button"
@@ -132,13 +154,7 @@ function EyeIcon({ visible }: { visible: boolean }) {
         strokeLinecap="round"
         strokeLinejoin="round"
       />
-      <circle
-        cx="12"
-        cy="12"
-        r="2.5"
-        stroke="currentColor"
-        strokeWidth="1.5"
-      />
+      <circle cx="12" cy="12" r="2.5" stroke="currentColor" strokeWidth="1.5" />
     </svg>
   );
 }
