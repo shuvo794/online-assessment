@@ -8,21 +8,21 @@ export function AppFooter() {
           <span className="text-xl font-normal leading-[1.3]">Powered by</span>
           <ResourceLogoMark variant="onDark" />
         </div>
-        <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center sm:gap-4">
-          <span className="text-base font-medium leading-[1.5]">Helpline</span>
-          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:gap-4">
+        <div className="flex flex-col gap-4">
+          <span className="text-base font-medium leading-normal">Helpline</span>
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:gap-6">
             <a
-              href="tel:+88011020202505"
-              className="flex items-center gap-2 text-base font-normal leading-[1.5] hover:opacity-90"
+              href="tel:+88021051515510"
+              className="flex items-center gap-2 text-base font-normal leading-normal hover:opacity-90"
             >
-              <PhoneIcon className="size-6 shrink-0" />
-              +88 011020202505
+              <PhoneIcon className="size-5 shrink-0" />
+              +88 021051515510
             </a>
             <a
               href="mailto:support@akij.work"
-              className="flex items-center gap-2 text-base font-normal leading-[1.5] hover:opacity-90"
+              className="flex items-center gap-2 text-base font-normal leading-normal hover:opacity-90"
             >
-              <MailIcon className="size-6 shrink-0" />
+              <MailIcon className="size-5 shrink-0" />
               support@akij.work
             </a>
           </div>

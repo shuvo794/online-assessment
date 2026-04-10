@@ -1,0 +1,32 @@
+import Link from "next/link";
+
+import { TimeoutClockIcon } from "@/components/online-tests-icons";
+
+export function TestTimeout() {
+  return (
+    <div className="mx-auto flex w-full max-w-[840px] items-center justify-center pt-8 md:pt-16">
+      <div className="flex w-full flex-col items-center gap-6 rounded-2xl border border-[#f0f0f0] bg-white px-6 py-12 text-center shadow-sm md:px-12 md:py-16">
+        <div className="relative flex items-center justify-center">
+          <TimeoutClockIcon className="size-20 md:size-24" />
+        </div>
+
+        <div className="flex flex-col gap-3">
+          <h1 className="text-2xl font-bold text-[#130b2c] md:text-3xl">
+            Timeout!
+          </h1>
+          <p className="max-w-[600px] text-base leading-relaxed text-slate-500 md:text-lg">
+            Dear Md. Naimur Rahman, Your exam time has been finished. Thank you
+            for participating.
+          </p>
+        </div>
+
+        <Link
+          href="/testOnlineDashboard"
+          className="mt-2 inline-flex h-12 items-center justify-center rounded-xl border border-[#f1f2f4] px-8 text-base font-semibold text-slate-700 transition-colors hover:bg-slate-50"
+        >
+          Back to Dashboard
+        </Link>
+      </div>
+    </div>
+  );
+}

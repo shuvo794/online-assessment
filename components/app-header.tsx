@@ -18,7 +18,13 @@ export function AppHeader() {
     pathname.startsWith("/dashboard") ||
     pathname.startsWith("/online-tests") ||
     pathname.startsWith("/testOnlineDashboard");
-  const showCenterTitle = isLogin || isHome;
+  const showCenterTitle =
+    isLogin ||
+    isHome ||
+    pathname === "/mcqExam" ||
+    pathname === "/textExam" ||
+    pathname === "/testSuccess" ||
+    pathname === "/testTimeout";
   const showOnlineTestCenterTitle = isManageOnlineTest;
   const showLoginButton = isLogin || isHome;
   const showLeftDashboardNav = isDashboard && !isManageOnlineTest;

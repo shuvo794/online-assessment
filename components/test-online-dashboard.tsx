@@ -1,3 +1,4 @@
+import Link from "next/link";
 import type { ReactNode } from "react";
 
 import {
@@ -88,13 +89,13 @@ export function TestOnlineDashboard() {
                 value={test.negativeMarking}
               />
             </div>
-            <div>
-              <button
-                type="button"
-                className="rounded-xl border border-[#6633ff] px-8 py-2.5 text-sm font-semibold text-[#6633ff] transition-colors hover:bg-[#6633ff]/5"
+            <div className="pt-2">
+              <Link
+                href="/mcqExam"
+                className="inline-block rounded-xl border border-[#6633ff] px-8 py-2.5 text-sm font-semibold text-[#6633ff] transition-colors hover:bg-[#6633ff]/5"
               >
                 Start
-              </button>
+              </Link>
             </div>
           </article>
         ))}
