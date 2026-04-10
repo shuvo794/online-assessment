@@ -12,7 +12,8 @@ export function AppHeader() {
   const isManageOnlineTest =
     pathname.startsWith("/online-tests/manage") ||
     pathname.startsWith("/online-tests/view") ||
-    pathname.startsWith("/online-tests/questions");
+    pathname.startsWith("/online-tests/questions") ||
+    pathname.startsWith("/online-tests/save");
   const isDashboard =
     pathname.startsWith("/dashboard") ||
     pathname.startsWith("/online-tests");
