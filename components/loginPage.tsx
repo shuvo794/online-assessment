@@ -59,7 +59,7 @@ export function LoginPage() {
           </div>
 
           <Link
-            href="/dashboard"
+            href="/testOnlineDashboard"
             className="flex w-full items-center justify-center rounded-xl bg-[#6633ff] px-8 py-4 text-center text-lg font-semibold leading-[1.5] text-white transition-all hover:bg-[#5528e0] focus:outline-none focus:ring-2 focus:ring-[#6633ff] focus:ring-offset-2 active:scale-[0.98] md:py-3 md:text-base"
           >
             Submit

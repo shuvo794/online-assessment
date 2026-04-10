@@ -16,7 +16,8 @@ export function AppHeader() {
     pathname.startsWith("/online-tests/save");
   const isDashboard =
     pathname.startsWith("/dashboard") ||
-    pathname.startsWith("/online-tests");
+    pathname.startsWith("/online-tests") ||
+    pathname.startsWith("/testOnlineDashboard");
   const showCenterTitle = isLogin || isHome;
   const showOnlineTestCenterTitle = isManageOnlineTest;
   const showLoginButton = isLogin || isHome;
