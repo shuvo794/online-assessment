@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState, type ReactNode } from "react";
+import { useRouter } from "next/navigation";
 
 import {
   ChevronDownSmallIcon,
@@ -13,11 +14,14 @@ import {
 import { OnlineTestsToolbar } from "@/components/online-tests-toolbar";
 
 interface TestData {
+  id?: string;
   title: string;
   candidates: string;
   questionSet: string;
+  duration?: string;
   slots?: string;
   examSlots?: string;
+  questions?: any[];
 }
 
 const MOCK_TESTS: TestData[] = [
@@ -31,16 +35,17 @@ const MOCK_TESTS: TestData[] = [
 
 /** Dashboard with test cards — route `/dashboard` */
 export function DashboardOnlineTests() {
+  const router = useRouter();
   const [tests, setTests] = useState<TestData[]>([]);
 
   useEffect(() => {
-    const savedTests = JSON.parse(localStorage.getItem("online_tests") || "[]");
-    // Normalize data from localStorage to match the display structure
-    const normalizedSaved = savedTests.map((t: any) => ({
+    const savedTests: TestData[] = JSON.parse(
+      localStorage.getItem("online_tests") || "[]"
+    );
+    const normalizedSaved = savedTests.map((t) => ({
       ...t,
-      examSlots: t.slots, // Map 'slots' from form to 'examSlots' for display
+      examSlots: t.slots,
     }));
-    
     setTests([...MOCK_TESTS, ...normalizedSaved]);
   }, []);
 
@@ -49,41 +54,65 @@ export function DashboardOnlineTests() {
       <OnlineTestsToolbar />
 
       <div className="grid gap-4 sm:grid-cols-2">
-        {tests.map((test, i) => (
-          <article
-            key={i}
-            className="flex flex-col gap-6 rounded-2xl border border-gray-200 bg-white px-8 pb-10 pt-8 shadow-sm"
-          >
-            <h2 className="text-xl font-semibold leading-[1.4] text-slate-700">
-              {test.title}
-            </h2>
-            <div className="flex flex-col gap-3 text-sm sm:flex-row sm:flex-wrap sm:items-center sm:justify-between sm:gap-4">
-              <Stat
-                icon={<UserGroupIcon className="size-6 text-slate-600" />}
-                label="Candidates:"
-                value={test.candidates}
-              />
-              <Stat
-                icon={<FileIcon className="size-6 text-slate-600" />}
-                label="Question Set:"
-                value={test.questionSet}
-              />
-              <Stat
-                icon={<TimelineIcon className="size-6 text-slate-600" />}
-                label="Exam Slots:"
-                value={test.examSlots || test.slots || "Not Set"}
-              />
-            </div>
-            <div>
-              <button
-                type="button"
-                className="rounded-xl border border-[#6633ff] px-6 py-2.5 text-sm font-semibold text-[#6633ff] transition-colors hover:bg-violet-50"
-              >
-                View Candidates
-              </button>
-            </div>
-          </article>
-        ))}
+        {tests.map((test, i) => {
+          const parsedDur = parseInt(test.duration || "", 10);
+          const displayDur =
+            Number.isFinite(parsedDur) && parsedDur > 0
+              ? `${parsedDur} min`
+              : "—";
+          const questionCount = test.questions
+            ? test.questions.length
+            : test.questionSet || "?";
+
+          return (
+            <article
+              key={i}
+              className="flex flex-col gap-6 rounded-2xl border border-gray-200 bg-white px-8 pb-10 pt-8 shadow-sm"
+            >
+              <h2 className="text-xl font-semibold leading-[1.4] text-slate-700">
+                {test.title}
+              </h2>
+              <div className="flex flex-col gap-3 text-sm sm:flex-row sm:flex-wrap sm:items-center sm:justify-between sm:gap-4">
+                <Stat
+                  icon={<UserGroupIcon className="size-6 text-slate-600" />}
+                  label="Candidates:"
+                  value={test.candidates}
+                />
+                <Stat
+                  icon={<FileIcon className="size-6 text-slate-600" />}
+                  label="Questions:"
+                  value={String(questionCount)}
+                />
+                <Stat
+                  icon={<TimelineIcon className="size-6 text-slate-600" />}
+                  label="Duration:"
+                  value={displayDur}
+                />
+              </div>
+
+              {/* Actions */}
+              <div className="flex items-center gap-3">
+                <button
+                  type="button"
+                  className="rounded-xl border border-[#6633ff] px-6 py-2.5 text-sm font-semibold text-[#6633ff] transition-colors hover:bg-violet-50"
+                >
+                  View Candidates
+                </button>
+                {test.id && (
+                  <button
+                    type="button"
+                    onClick={() =>
+                      router.push(`/online-tests/view?id=${test.id}`)
+                    }
+                    className="rounded-xl border border-gray-200 bg-white px-6 py-2.5 text-sm font-semibold text-slate-600 transition-colors hover:bg-slate-50"
+                  >
+                    Manage
+                  </button>
+                )}
+              </div>
+            </article>
+          );
+        })}
       </div>
 
       <div className="mt-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">

@@ -165,13 +165,14 @@ export function ManageOnlineTestBasicForm() {
                 placeholder="Enter end time"
               />
             </Field>
-            <Field label="Duration">
+            <Field label="Duration (Minutes)">
               <input
-                type="text"
+                type="number"
                 name="duration"
                 value={formData.duration}
                 onChange={handleChange}
-                placeholder="Duration Time"
+                placeholder="e.g. 30"
+                min="1"
                 className="w-full rounded-lg border border-gray-300 bg-white px-3 py-2.5 text-sm text-slate-800 placeholder:text-slate-400 focus:border-[#6633ff] focus:outline-none focus:ring-2 focus:ring-violet-100"
               />
             </Field>
