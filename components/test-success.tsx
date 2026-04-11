@@ -1,8 +1,23 @@
-import Link from "next/link";
+"use client";
 
+import Link from "next/link";
+import { useEffect, useState } from "react";
 import { ChecklistIcon } from "@/components/online-tests-icons";
 
 export function TestSuccess() {
+  const [displayName, setDisplayName] = useState("Candidate");
+
+  useEffect(() => {
+    const raw = localStorage.getItem("user");
+    if (raw) {
+      const user = JSON.parse(raw);
+      if (user.email) {
+        const name = user.email.split("@")[0].replace(/\./g, " ");
+        setDisplayName(name);
+      }
+    }
+  }, []);
+
   return (
     <div className="mx-auto flex w-full max-w-[840px] items-center justify-center pt-8 md:pt-16">
       <div className="flex w-full flex-col items-center gap-8 rounded-2xl border border-[#f0f0f0] bg-white px-6 py-12 text-center shadow-sm md:px-12 md:py-16">
@@ -15,8 +30,7 @@ export function TestSuccess() {
             Test Completed
           </h1>
           <p className="max-w-[600px] text-base leading-relaxed text-slate-500 md:text-lg">
-            Congratulations! Md. Naimur Rahman, You have completed your MCQ Exam
-            for Probationary Officer. Thank you for participating.
+            Congratulations! <strong className="capitalize text-slate-800">{displayName}</strong>, You have completed your MCQ Exam. Thank you for participating.
           </p>
         </div>
 

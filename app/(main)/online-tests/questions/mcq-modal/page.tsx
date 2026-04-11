@@ -283,22 +283,21 @@ function RichTextEditor({
         <button className="italic hover:text-gray-900 font-serif">I</button>
       </div>
       {/* Input Area */}
-      <div className="relative min-h-[60px] p-4 text-sm text-gray-800 focus:outline-none">
-        <div 
-          className="min-h-[1.5rem] w-full"
-          contentEditable 
+      <div className="relative p-2">
+        <textarea
+          className="block w-full resize-none rounded bg-transparent p-2 text-sm text-gray-800 placeholder:text-gray-300 focus:outline-none"
+          rows={2}
+          value={value}
+          placeholder={placeholder}
           onFocus={() => setIsFocused(true)}
           onBlur={() => setIsFocused(false)}
-          onInput={(e) => onChange(e.currentTarget.innerText)}
-          suppressContentEditableWarning={true}
-        >
-          {value}
-        </div>
-        {!value && !isFocused && (
-          <span className="pointer-events-none absolute left-4 top-4 text-gray-300">
-            {placeholder}
-          </span>
-        )}
+          onChange={(e) => {
+            onChange(e.target.value);
+            // Auto-resize
+            e.target.style.height = 'auto';
+            e.target.style.height = e.target.scrollHeight + 'px';
+          }}
+        />
       </div>
     </div>
   );
