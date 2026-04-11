@@ -1,8 +1,10 @@
 "use client";
 
 import { useRouter, useSearchParams } from "next/navigation";
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, Suspense } from "react";
 import Link from "next/link";
+
+export const dynamic = "force-dynamic";
 
 interface Option {
   id: string;
@@ -14,7 +16,7 @@ interface Option {
 /**
  * MCQ Section — Modal/Editor UI
  */
-export default function MCQEditorPage() {
+function MCQEditorContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const id = searchParams.get("id") || "";
@@ -331,5 +333,14 @@ function UndoIcon({ className }: { className?: string }) {
 function RedoIcon({ className }: { className?: string }) {
   return (
     <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 7v6h-6"/><path d="M3 17a9 9 0 0 1 9-9 9 9 0 0 1 6 2.3L21 13"/></svg>
+  );
+}
+
+/** Suspense wrapper required because MCQEditorContent uses useSearchParams() */
+export default function MCQEditorPage() {
+  return (
+    <Suspense fallback={<div className="flex items-center justify-center p-20 text-slate-400">Loading...</div>}>
+      <MCQEditorContent />
+    </Suspense>
   );
 }

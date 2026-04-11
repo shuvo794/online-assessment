@@ -1,8 +1,10 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
+
+export const dynamic = "force-dynamic";
 
 interface Question {
   id: string;
@@ -50,7 +52,7 @@ const STATIC_QUESTIONS: Question[] = [
 /**
  * Manage Online Test — Save / List View
  */
-export default function OnlineTestSavePage() {
+function OnlineTestSaveContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const id = searchParams.get("id") || "";
@@ -143,6 +145,14 @@ export default function OnlineTestSavePage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function OnlineTestSavePage() {
+  return (
+    <Suspense fallback={<div className="p-10 text-center text-slate-500">Loading...</div>}>
+      <OnlineTestSaveContent />
+    </Suspense>
   );
 }
 
