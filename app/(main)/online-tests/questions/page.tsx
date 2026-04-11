@@ -1,6 +1,6 @@
 "use client";
 
-import { Suspense } from "react";
+import { Suspense, useEffect, useState } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import Link from "next/link";
 
@@ -50,7 +50,30 @@ const MOCK_QUESTIONS: Question[] = [
 function ManualQuestionsContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
-  const id = searchParams.get("id");
+  const id = searchParams.get("id") || "";
+  const [questions, setQuestions] = useState<Question[]>([]);
+
+  useEffect(() => {
+    const userQuestions = JSON.parse(localStorage.getItem("user_added_questions") || "[]");
+    // If no user questions, we can fall back to empty or MOCK_QUESTIONS depending on preference.
+    // We will initialize with empty, but if user wants mock we could set userQuestions.length ? userQuestions : MOCK_QUESTIONS.
+    // Let's just use what's in local storage.
+    setQuestions(userQuestions.length > 0 ? userQuestions : MOCK_QUESTIONS);
+  }, []);
+
+  const handleRemove = (qid: string) => {
+    const updated = questions.filter((q) => q.id !== qid);
+    setQuestions(updated);
+    localStorage.setItem("user_added_questions", JSON.stringify(updated));
+  };
+
+  const handleEdit = (qid: string, type: string) => {
+    if (type === "Text") {
+      router.push(`/online-tests/questions/text-modal?id=${id}&qid=${qid}`);
+    } else {
+      router.push(`/online-tests/questions/mcq-modal?id=${id}&qid=${qid}`);
+    }
+  };
 
   return (
     <div className="mx-auto w-full max-w-[960px]">
@@ -70,21 +93,41 @@ function ManualQuestionsContent() {
               <StepIndicator label="Questions Sets" completed />
             </div>
           </div>
-          <Link
-            href="/dashboard"
-            className="shrink-0 rounded-xl border border-gray-200 bg-white px-6 py-2.5 text-sm font-bold text-[#130b2c] shadow-sm transition-colors hover:bg-slate-50"
-          >
-            Back to Dashboard
-          </Link>
+          <div className="flex items-center gap-4">
+            <button
+              onClick={() => router.push(`/online-tests/questions/mcq-modal?id=${id}`)}
+              className="shrink-0 rounded-xl bg-violet-100 px-6 py-2.5 text-sm font-bold text-[#6633ff] transition-colors hover:bg-violet-200"
+            >
+              + Add Question
+            </button>
+            <Link
+              href="/dashboard"
+              className="shrink-0 rounded-xl border border-gray-200 bg-white px-6 py-2.5 text-sm font-bold text-[#130b2c] shadow-sm transition-colors hover:bg-slate-50"
+            >
+              Back to Dashboard
+            </Link>
+          </div>
         </div>
 
         {/* Questions List Section */}
         <div className="flex flex-col gap-8 rounded-2xl bg-[#f8fafc]/50 p-6 sm:p-10">
-          <div className="flex flex-col gap-8">
-            {MOCK_QUESTIONS.map((q, idx) => (
-              <QuestionCard key={q.id} question={q} index={idx + 1} />
-            ))}
-          </div>
+          {questions.length === 0 ? (
+            <div className="py-10 text-center text-slate-500">
+              No questions added yet. Click "+ Add Question" to begin.
+            </div>
+          ) : (
+            <div className="flex flex-col gap-8">
+              {questions.map((q, idx) => (
+                <QuestionCard
+                  key={q.id}
+                  question={q}
+                  index={idx + 1}
+                  onRemove={() => handleRemove(q.id)}
+                  onEdit={() => handleEdit(q.id, q.type)}
+                />
+              ))}
+            </div>
+          )}
 
           {/* Save & Continue Button at the bottom */}
           <button
@@ -100,7 +143,17 @@ function ManualQuestionsContent() {
   );
 }
 
-function QuestionCard({ question, index }: { question: Question; index: number }) {
+function QuestionCard({
+  question,
+  index,
+  onRemove,
+  onEdit,
+}: {
+  question: Question;
+  index: number;
+  onRemove: () => void;
+  onEdit: () => void;
+}) {
   return (
     <div className="rounded-2xl border border-gray-100 bg-white p-6 shadow-sm sm:p-8">
       {/* Card Header */}
@@ -148,10 +201,16 @@ function QuestionCard({ question, index }: { question: Question; index: number }
 
       {/* Card Footer Actions */}
       <div className="flex items-center justify-between border-t border-gray-50 pt-6">
-        <button className="text-sm font-bold text-[#6633ff] transition-colors hover:text-[#5528e0]">
+        <button
+          onClick={onEdit}
+          className="text-sm font-bold text-[#6633ff] transition-colors hover:text-[#5528e0]"
+        >
           Edit
         </button>
-        <button className="text-sm font-bold text-[#ff4d4d] transition-colors hover:text-red-600">
+        <button
+          onClick={onRemove}
+          className="text-sm font-bold text-[#ff4d4d] transition-colors hover:text-red-600"
+        >
           Remove From Exam
         </button>
       </div>
@@ -226,3 +285,4 @@ function CheckIcon({ className }: { className?: string }) {
     </svg>
   );
 }
+

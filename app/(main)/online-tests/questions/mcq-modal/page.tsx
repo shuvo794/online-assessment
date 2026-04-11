@@ -110,7 +110,7 @@ export default function MCQEditorPage() {
     
     localStorage.setItem("user_added_questions", JSON.stringify(updatedQuestions));
 
-    router.push(`/online-tests/save?id=${id}`);
+    router.push(`/online-tests/questions?id=${id}`);
   };
 
   return (
@@ -190,7 +190,7 @@ export default function MCQEditorPage() {
         {/* Modal Footer */}
         <div className="flex items-center justify-end gap-3 border-t border-gray-100 p-6">
           <button 
-            onClick={() => router.push(`/online-tests/save?id=${id}`)}
+            onClick={() => router.push(`/online-tests/questions?id=${id}`)}
             className="rounded-xl border border-gray-300 bg-white px-8 py-3 text-sm font-bold text-[#6633ff] transition-colors hover:bg-slate-50"
           >
             Cancel

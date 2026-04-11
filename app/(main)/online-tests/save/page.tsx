@@ -126,8 +126,14 @@ export default function OnlineTestSavePage() {
           <button
             type="button"
             onClick={() => {
-              // Clear user questions on final finish if desired
-              // localStorage.removeItem("user_added_questions");
+              // Persist the final question list onto the test record
+              const allTests = JSON.parse(localStorage.getItem("online_tests") || "[]");
+              const updatedTests = allTests.map((t: any) =>
+                t.id === id ? { ...t, questions } : t
+              );
+              localStorage.setItem("online_tests", JSON.stringify(updatedTests));
+              // Also clear the staging area
+              localStorage.removeItem("user_added_questions");
               router.push("/dashboard");
             }}
             className="inline-flex h-14 items-center justify-center rounded-2xl bg-[#6633ff] px-12 text-base font-bold text-white shadow-[0_8px_30px_rgb(102,51,255,0.2)] transition-all hover:bg-[#5528e0] active:scale-[0.99]"

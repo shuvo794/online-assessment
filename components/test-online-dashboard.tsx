@@ -1,4 +1,7 @@
-import Link from "next/link";
+"use client";
+
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import type { ReactNode } from "react";
 
 import {
@@ -11,34 +14,49 @@ import {
   TimelineIcon,
 } from "@/components/online-tests-icons";
 
-const MOCK_TESTS = [
-  {
-    title: "Psychometric Test for Management Trainee Officer",
-    duration: "30 min",
-    questions: "20",
-    negativeMarking: "-0.25/wrong",
-  },
-  {
-    title: "Psychometric Test for Management Trainee Officer",
-    duration: "30 min",
-    questions: "20",
-    negativeMarking: "-0.25/wrong",
-  },
-  {
-    title: "Psychometric Test for Management Trainee Officer",
-    duration: "30 min",
-    questions: "20",
-    negativeMarking: "-0.25/wrong",
-  },
-  {
-    title: "Psychometric Test for Management Trainee Officer",
-    duration: "30 min",
-    questions: "20",
-    negativeMarking: "-0.25/wrong",
-  },
-] as const;
+interface TestRecord {
+  id: string;
+  title: string;
+  duration: string; // minutes stored as string
+  questionSet: string;
+  slots: string;
+  candidates: string;
+  questionType: string;
+  startTime: string;
+  endTime: string;
+  questions?: any[];
+}
 
 export function TestOnlineDashboard() {
+  const router = useRouter();
+  const [tests, setTests] = useState<TestRecord[]>([]);
+  const [search, setSearch] = useState("");
+
+  useEffect(() => {
+    const saved: TestRecord[] = JSON.parse(
+      localStorage.getItem("online_tests") || "[]"
+    );
+    setTests(saved);
+  }, []);
+
+  const filtered = tests.filter((t) =>
+    t.title.toLowerCase().includes(search.toLowerCase())
+  );
+
+  const handleStart = (test: TestRecord) => {
+    // Store the active exam context so mcqExam page can read it
+    localStorage.setItem(
+      "active_exam",
+      JSON.stringify({
+        testId: test.id,
+        title: test.title,
+        durationMinutes: Number(test.duration) || 30,
+        questions: test.questions || [],
+      })
+    );
+    router.push(`/mcqExam`);
+  };
+
   return (
     <div className="mx-auto flex w-full max-w-[1280px] flex-col gap-4">
       {/* Toolbar */}
@@ -49,6 +67,8 @@ export function TestOnlineDashboard() {
         <div className="relative w-full max-w-[420px]">
           <input
             type="text"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
             placeholder="Search by exam title"
             className="h-12 w-full rounded-xl border border-[#f1f2f4] bg-white pl-4 pr-12 text-sm text-slate-700 placeholder:text-slate-400 focus:border-[#6633ff] focus:outline-none focus:ring-2 focus:ring-[#6633ff]/10"
           />
@@ -63,43 +83,55 @@ export function TestOnlineDashboard() {
       </div>
 
       {/* Cards Grid */}
-      <div className="grid gap-6 sm:grid-cols-2">
-        {MOCK_TESTS.map((test, i) => (
-          <article
-            key={i}
-            className="flex flex-col gap-6 rounded-2xl border border-[#f0f0f0] bg-white px-8 pb-10 pt-8 transition-shadow hover:shadow-md"
-          >
-            <h2 className="text-xl font-semibold leading-[1.4] text-slate-700">
-              {test.title}
-            </h2>
-            <div className="flex flex-col gap-4 text-sm sm:flex-row sm:flex-wrap sm:items-center sm:gap-6">
-              <Stat
-                icon={<TimelineIcon className="size-6 text-slate-400" />}
-                label="Duration:"
-                value={test.duration}
-              />
-              <Stat
-                icon={<FileIcon className="size-6 text-slate-400" />}
-                label="Question:"
-                value={test.questions}
-              />
-              <Stat
-                icon={<NegativeMarkingIcon className="size-6 text-slate-400" />}
-                label="Negative Marking:"
-                value={test.negativeMarking}
-              />
-            </div>
-            <div className="pt-2">
-              <Link
-                href="/mcqExam"
-                className="inline-block rounded-xl border border-[#6633ff] px-8 py-2.5 text-sm font-semibold text-[#6633ff] transition-colors hover:bg-[#6633ff]/5"
-              >
-                Start
-              </Link>
-            </div>
-          </article>
-        ))}
-      </div>
+      {filtered.length === 0 ? (
+        <div className="rounded-2xl border border-dashed border-gray-200 bg-white py-20 text-center text-slate-400">
+          {tests.length === 0
+            ? "No exams available yet. Ask your administrator to create one."
+            : "No exams match your search."}
+        </div>
+      ) : (
+        <div className="grid gap-6 sm:grid-cols-2">
+          {filtered.map((test) => (
+            <article
+              key={test.id}
+              className="flex flex-col gap-6 rounded-2xl border border-[#f0f0f0] bg-white px-8 pb-10 pt-8 transition-shadow hover:shadow-md"
+            >
+              <h2 className="text-xl font-semibold leading-[1.4] text-slate-700">
+                {test.title}
+              </h2>
+              <div className="flex flex-col gap-4 text-sm sm:flex-row sm:flex-wrap sm:items-center sm:gap-6">
+                <Stat
+                  icon={<TimelineIcon className="size-6 text-slate-400" />}
+                  label="Duration:"
+                  value={`${test.duration || "?"} min`}
+                />
+                <Stat
+                  icon={<FileIcon className="size-6 text-slate-400" />}
+                  label="Questions:"
+                  value={
+                    test.questions
+                      ? String(test.questions.length)
+                      : test.questionSet || "?"
+                  }
+                />
+                <Stat
+                  icon={<NegativeMarkingIcon className="size-6 text-slate-400" />}
+                  label="Type:"
+                  value={test.questionType?.toUpperCase() || "MCQ"}
+                />
+              </div>
+              <div className="pt-2">
+                <button
+                  onClick={() => handleStart(test)}
+                  className="inline-block rounded-xl border border-[#6633ff] px-8 py-2.5 text-sm font-semibold text-[#6633ff] transition-colors hover:bg-[#6633ff]/5"
+                >
+                  Start
+                </button>
+              </div>
+            </article>
+          ))}
+        </div>
+      )}
 
       {/* Pagination */}
       <div className="mt-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
